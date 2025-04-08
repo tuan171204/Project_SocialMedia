@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { use, useEffect, useState } from 'react'
 import './Profile.css'
 import FacebookTwoToneIcon from "@mui/icons-material/FacebookTwoTone";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
@@ -9,55 +9,117 @@ import PlaceIcon from "@mui/icons-material/Place";
 import LanguageIcon from "@mui/icons-material/Language";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Posts from '../../Components/Posts/Posts'
+import { useParams } from 'react-router';
+import { getUser } from '../../Services/UserService/userService'
+import DefaultProfilePic from '../../assets/defaultProfilePic.jpg';
 
 const Profile = () => {
+
+    const { id } = useParams();
+    const [userName, setUserName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [bio, setBio] = useState('');
+    const [profileImageUrl, setProfileImageUrl] = useState('');
+    const [bannerImageUrl, setBannerImageUrl] = useState('');
+
+    useEffect(() => {
+        loadUserInfo()
+    }, [id])
+
+    const loadUserInfo = async () => {
+        try {
+            const response = await getUser(id);
+
+            if (response && response.data) {
+                const userData = response.data.data;
+                setUserName(userData.username || '');
+                setFirstName(userData.firstName || '');
+                setLastName(userData.lastName || '');
+                setEmail(userData.email || '');
+                setBio(userData.bio || '');
+                setProfileImageUrl(userData.profileImageUrl || '');
+                setBannerImageUrl(userData.bannerImageUrl || '');
+            } else {
+                console.warn('Invalid data format:', response.data);
+                setUserName('');
+                setFirstName('');
+                setLastName('');
+                setEmail('');
+                setBio('');
+                setProfileImageUrl('');
+                setBannerImageUrl('');
+            }
+
+        } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu người dùng: ", error);
+            setUserName('');
+            setFirstName('');
+            setLastName('');
+            setEmail('');
+            setBio('');
+            setProfileImageUrl('');
+            setBannerImageUrl('');
+        }
+    }
+
     return (
-        <div className='profile bg-white'>
-            <div className='images w-full h-[300px] relative'>
-                <img src="https://images.pexels.com/photos/13916254/pexels-photo-13916254.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="" className='cover h-full w-full object-cover' />
-                <img src="https://images.pexels.com/photos/13916254/pexels-photo-13916254.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="" className='profilePic w-[200px] h-[200px] rounded-full object-cover absolute left-0 right-0 m-auto top-[200px]' />
+        <div className='profile'>
+            <div className='images'>
+                <img
+                    src={bannerImageUrl || DefaultProfilePic}
+                    alt="Cover"
+                    className='cover h-full w-full object-cover'
+                />
+                <img
+                    src={profileImageUrl || DefaultProfilePic}
+                    alt="Profile"
+                    className='profilePic'
+                />
             </div>
-            <div className="profileContainer py-[20px] px-[70px]">
-                <div className="userInfo h-[180px] rounded-lg bg-white text-black p-[50px] flex items-center justify-between mb-[20px]">
-                    <div className="left flex-[1] flex gap-[10px]">
-                        <a href="http://facebook.com" class='text-gray-500'>
+            <div className="profileContainer">
+                <div className="profileUserInfo">
+                    <div className="left">
+                        <a href="http://facebook.com" className='text-gray-500'>
                             <FacebookTwoToneIcon fontSize="large" />
                         </a>
-                        <a href="http://facebook.com" class='text-gray-500'>
+                        <a href="http://facebook.com" className='text-gray-500'>
                             <InstagramIcon fontSize="large" />
                         </a>
-                        <a href="http://facebook.com" class='text-gray-500'>
+                        <a href="http://facebook.com" className='text-gray-500'>
                             <TwitterIcon fontSize="large" />
                         </a>
-                        <a href="http://facebook.com" class='text-gray-500'>
+                        <a href="http://facebook.com" className='text-gray-500'>
                             <LinkedInIcon fontSize="large" />
                         </a>
-                        <a href="http://facebook.com" class='text-gray-500'>
+                        <a href="http://facebook.com" className='text-gray-500'>
                             <PinterestIcon fontSize="large" />
                         </a>
                     </div>
-                    <div className="center flex-[1] flex flex-col items-center gap-[10px] mt-[100px]">
-                        <span class='font-medium text-[30px]'>User</span>
-                        <div className="info w-full flex items-center justify-around">
-                            <div className="item flex items-center gap-[10px] text-gray-500">
+                    <div className="center">
+                        <span>{userName || 'User'}</span>
+                        <div className="info">
+                            <div className="item">
                                 <PlaceIcon />
                                 <span>Viet Nam</span>
                             </div>
-                            <div className="item flex items-center gap-[10px] text-gray-500">
+                            <div className="item">
                                 <LanguageIcon />
-                                <span>Java Spring Boot</span>
+                                <span>Tiếng Việt</span>
                             </div>
                         </div>
-                        <button className='border-none bg-[#5271FF] tetx-white py-[10px] px-[20px] rounded-md cursor-pointer'>Follow</button>
+                        <button>Follow</button>
                     </div>
-                    <div className="right flex-[1] flex items-center justify-end gap-[10px]">
-                        <EmailOutlinedIcon />
-                        <MoreVertIcon />
+                    <div className="right">
+                        <EmailOutlinedIcon style={{ cursor: 'pointer' }} />
+                        <MoreVertIcon style={{ cursor: 'pointer' }} />
                     </div>
                 </div>
+                <Posts />
             </div>
         </div>
-
     )
 }
 
